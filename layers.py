@@ -20,11 +20,21 @@ class GraphConvolution(nn.Module):
 
     def __init__(self, node_in: int, node_out: int, edge_in: int, edge_out: int):
         super(GraphConvolution, self).__init__()
-        self.Wvv = torch.randn((node_in, node_out), requires_grad=True)  # Node to node
-        self.Wev = torch.randn((edge_in, node_out), requires_grad=True)  # Edge to node
-        self.Wve = torch.randn((node_in, edge_out), requires_grad=True)  # Node to edge
-        self.bv = torch.randn((1, node_out), requires_grad=True)  # Node bias
-        self.be = torch.randn((1, edge_out), requires_grad=True)  # Edge bias
+        self.Wvv = torch.randn(  # Node to node
+            (node_in, node_out), requires_grad=True, dtype=float
+        )
+        self.Wev = torch.randn(  # Edge to node
+            (edge_in, node_out), requires_grad=True, dtype=float
+        )
+        self.Wve = torch.randn(  # Node to edge
+            (node_in, edge_out), requires_grad=True, dtype=float
+        )
+        self.bv = torch.randn(  # Node bias
+            (1, 1, node_out), requires_grad=True, dtype=float
+        )
+        self.be = torch.randn(  # Edge bias
+            (1, 1, edge_out), requires_grad=True, dtype=float
+        )
 
         self.weights = {"Wvv": self.Wvv, "Wev": self.Wev, "Wve": self.Wve}
         self.biases = {"bv": self.bv, "be": self.be}
