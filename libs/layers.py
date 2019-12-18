@@ -5,6 +5,39 @@ import torch
 import torch.nn as nn
 
 
+class NodeConvolution(nn.Module):
+    """Graph convolution layer over nodes"""
+
+    def __init__(self, node_in: int, node_out: int):
+        super(NodeConvolution, self).__init__()
+        self.W = torch.randn(  # Node to node
+            (node_in, node_out), requires_grad=True, dtype=float
+        )
+        self.b = torch.randn(  # Node bias
+            (1, 1, node_out), requires_grad=True, dtype=float
+        )
+        nn.init.xavier_uniform_(self.W)
+        nn.init.xavier_uniform_(self.b)
+
+    def forward(self, A, V):
+        """Computes forward pass of graph convolution
+
+        Arguments:
+            A [Tensor]: Adjacency matrix of the graph. Acts as a diffusion
+                operator on the space of nodes. Is a square matrix with
+                dimensions of (|V|, |V|).
+            V [Tensor]: Node feature matrix. Must have dimensions of
+                (batch, |V|, node_in).
+        Returns:
+            Tensor: Tensor representing the output node representations. The
+                tensor has dimensions (batch, |V|, node_out).
+        """
+        # FIXME: use of torch.einsum is supposed to be really slow; try to
+        # replace with matmul or tensordot if possible
+        Vout = torch.einsum("ba,xai,ij->xbj", A, V, self.W)
+        return Vout
+
+
 class GraphConvolution(nn.Module):
     """Generalized graph convolution layer.
 

@@ -2,9 +2,32 @@ import numpy as np
 import torch
 import networkx as nx
 
-from layers import GraphConvolution
+from neural_tsp.libs.layers import NodeConvolution, GraphConvolution  # noqa
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def test_node_convolution():
+    # Define convolution layer
+    node_in, node_out = np.random.randint(1, 10, size=2)
+    gconv = NodeConvolution(node_in, node_out)
+    gconv.to(device)
+
+    # Define graph
+    num_nodes = 10
+    p = 0.5
+    batch_size = 4
+    G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
+
+    # Create torch tensors
+    A = torch.tensor(nx.adjacency_matrix(G).todense(), dtype=float)
+    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=float)
+
+    # Forward pass
+    Vout = gconv(A, V)
+
+    # Assert output shapes are correct
+    assert Vout.shape == (batch_size, G.number_of_nodes(), node_out)
 
 
 def test_graph_convolution():
