@@ -107,3 +107,25 @@ class GraphConvolution(nn.Module):
         Vout = Vvv + Vev + self.bv
         Eout = torch.einsum("ab,xbi,ij->xaj", B, V, self.Wve) + self.be
         return Vout, Eout
+
+
+class GraphEmbedding(nn.Module):
+    """Graph embedding layer"""
+
+    def __init__(self):
+        super(GraphEmbedding, self).__init__()
+
+    def forward(self, V, E):
+        """
+        Embeds a graph with node feature tensor V into an embedding space
+        with a linear transformation determined by E. This layer does not
+        determine the embedding for you, it must be supplied.
+        
+        Arguments:
+            V [tensor]: Node feature tensor of dimensions (batch, nodes, features)
+            E [tensor]: Embedding matrix of dimensions (nodes, embedding_dim)
+        Returns:
+            tensor: New node tensor transformed into embedding space.
+        """
+        Vout = torch.einsum("xai,ab->xbi", V, E)
+        return Vout

@@ -1,8 +1,14 @@
 import numpy as np
 import torch
 import networkx as nx
+from sklearn.decomposition import non_negative_factorization
 
-from neural_tsp.libs.layers import NodeConvolution, GraphConvolution  # noqa
+from neural_tsp.libs.layers import (  # noqa
+    NodeConvolution,
+    GraphConvolution,
+    GraphEmbedding,
+)
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -55,3 +61,26 @@ def test_graph_convolution():
     # Assert output shapes are correct
     assert Vout.shape == (batch_size, G.number_of_nodes(), node_out)
     assert Eout.shape == (batch_size, G.number_of_edges(), edge_out)
+
+
+def test_graph_embedding():
+    # Define graph
+    num_nodes = 10
+    p = 0.25
+    batch_size = 4
+    G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
+    A = nx.adjacency_matrix(G).todense()
+
+    # Define embedding
+    emb = GraphEmbedding()
+    nodes_in, nodes_out = G.number_of_nodes(), 5
+    W, H, _ = non_negative_factorization(A, n_components=nodes_out, init=None)
+
+    # Create torch tensors
+    num_features = 5
+    V = torch.randn((batch_size, num_nodes, num_features), dtype=float)
+    W = torch.tensor(W, dtype=float)
+
+    # Run through embedding layer
+    Vout = emb(V, W)
+
