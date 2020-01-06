@@ -14,6 +14,9 @@
 	* Useful blog post about how to design graph neural networks
 * Neural Message Passing for Quantum Chemistry; J. Gilmer, S. S. Schoenholz, P. F. Riley, O. Vinyals, G. E. Dahl; 2017; [arXiv:1704.01212](https://arxiv.org/pdf/1704.01212.pdf)
     * Uses message-passing to update node representations in a graph, formalizes a very general framework
+* Weighted Graph Cuts without Eigenvectors: A Multilevel Approach; I. S. Dhillon, Y. Guan, B. Kulis; [IEEE TRANSACTIONS ON PATTERN ANALYSIS AND MACHINE INTELLIGENCE, VOL. 29, NO. 1](http://www.cs.utexas.edu/users/inderjit/public_papers/multilevel_pami.pdf)
+	* Fast graph pooling technique that is similar to spectral pooling but uses weighted k-means (Graclus algorithm)
+* `torch_geometric`; [website](https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html)
 
 ## Reinforcement learning
 * Continuous control with deep reinforcement learning; T. Lillicrap et. al.; ICLR 2016; [arXiv:1509.02971](https://arxiv.org/abs/1509.02971)

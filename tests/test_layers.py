@@ -48,12 +48,16 @@ def test_graph_convolution():
     p = 0.5
     batch_size = 4
     G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
+    A = nx.adjacency_matrix(G).todense()
+    B = nx.incidence_matrix(G, oriented=True).T.todense()
+    V_size = (batch_size, G.number_of_nodes(), node_in)
+    E_size = (batch_size, G.number_of_edges(), edge_in)
 
     # Create torch tensors
-    A = torch.tensor(nx.adjacency_matrix(G).todense(), dtype=float)
-    B = torch.tensor(nx.incidence_matrix(G, oriented=True).T.todense(), dtype=float)
-    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=float)
-    E = torch.randn((batch_size, G.number_of_edges(), edge_in), dtype=float)
+    A = torch.tensor(A, dtype=float, device=device)
+    B = torch.tensor(B, dtype=float, device=device)
+    V = torch.randn(V_size, dtype=float, device=device)
+    E = torch.randn(E_size, dtype=float, device=device)
 
     # Forward pass
     Vout, Eout = gconv(A, B, V, E)
