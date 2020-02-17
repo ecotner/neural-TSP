@@ -2,21 +2,22 @@ import numpy as np
 import torch
 import networkx as nx
 from sklearn.decomposition import non_negative_factorization
+import pytest
 
-from neural_tsp.libs.layers import (  # noqa
-    NodeConvolution,
+from neural_tsp.libs.layers import (
+    NodeToNode,
+    NodeToEdge,
     GraphConvolution,
     GraphEmbedding,
 )
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def test_node_convolution():
+def test_node_to_node():
     # Define convolution layer
     node_in, node_out = np.random.randint(1, 10, size=2)
-    gconv = NodeConvolution(node_in, node_out)
+    gconv = NodeToNode(node_in, node_out)
     gconv.to(device)
 
     # Define graph
@@ -34,6 +35,29 @@ def test_node_convolution():
 
     # Assert output shapes are correct
     assert Vout.shape == (batch_size, G.number_of_nodes(), node_out)
+
+
+def test_node_to_edge():
+    # Define convolution layer
+    node_in, edge_out = np.random.randint(1, 10, size=2)
+    gconv = NodeToEdge(node_in, edge_out)
+    gconv.to(device)
+
+    # Define graph
+    num_nodes = 10
+    p = 0.5
+    batch_size = 4
+    G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
+
+    # Create torch tensors
+    B = torch.tensor(nx.incidence_matrix(G, oriented=True).T.todense(), dtype=float)
+    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=float)
+
+    # Forward pass
+    Vout = gconv(B, V)
+
+    # Assert output shapes are correct
+    assert Vout.shape == (batch_size, G.number_of_edges(), edge_out)
 
 
 def test_graph_convolution():
@@ -83,4 +107,3 @@ def test_graph_embedding():
 
     # Run through embedding layer
     Vout = emb(V, W)
-
