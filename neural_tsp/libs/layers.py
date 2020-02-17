@@ -1,15 +1,15 @@
-"""Custom neural network layers
+"""Custom neural network layers for graph convolutions
 """
 
 import torch
 import torch.nn as nn
 
 
-class NodeConvolution(nn.Module):
+class NodeToNode(nn.Module):
     """Graph convolution layer over nodes"""
 
     def __init__(self, node_in: int, node_out: int):
-        super(NodeConvolution, self).__init__()
+        super(NodeToNode, self).__init__()
         self.W = torch.randn(  # Node to node
             (node_in, node_out), requires_grad=True, dtype=float
         )
@@ -34,8 +34,42 @@ class NodeConvolution(nn.Module):
         """
         # FIXME: use of torch.einsum is supposed to be really slow; try to
         # replace with matmul or tensordot if possible
-        Vout = torch.einsum("ba,xai,ij->xbj", A, V, self.W)
+        Vout = torch.einsum("ab,xai,ij->xbj", A, V, self.W) + self.b
         return Vout
+
+
+class NodeToEdge(nn.Module):
+    """Layer that transforms node weights to edge weights.
+    """
+
+    def __init__(self, node_in, edge_out):
+        super(NodeToEdge, self).__init__()
+        self.W = torch.randn((node_in, edge_out), requires_grad=True, dtype=float)
+        self.b = torch.randn((1, 1, edge_out))
+        nn.init.xavier_uniform_(self.W)
+        nn.init.xavier_uniform_(self.b)
+
+    def forward(self, B, V):
+        """Computes forward pass of graph convolution
+
+        Arguments:
+            B [Tensor]: Incidence matrix of the graph. Acts as a diffusion
+                operator between the node/edge space. Is a matrix with
+                dimensions of (|E|, |V|).
+            V [Tensor]: Node feature matrix. Must have dimensions of
+                (batch, |V|, node_in).
+        Returns:
+            Tensor: Tensor representing the output node representations. The
+                tensor has dimensions (batch, |E|, edge_out).
+        """
+        # FIXME: use of torch.einsum is supposed to be really slow; try to
+        # replace with matmul or tensordot if possible
+        Eout = torch.einsum("ab,xbi,ij->xaj", B, V, self.W) + self.b
+        return Eout
+
+
+class EdgeToNode(nn.Module):
+    pass
 
 
 class GraphConvolution(nn.Module):
