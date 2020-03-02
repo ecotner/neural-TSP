@@ -11,4 +11,3 @@ def test_environment():
     assert state.locs.shape == (num_locs, 2)
     assert all(state.order == np.argsort(action))
     assert state.dist_matrix.shape == (num_locs, num_locs)
-    assert state.dist == -reward

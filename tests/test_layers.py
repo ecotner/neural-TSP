@@ -78,10 +78,10 @@ def test_graph_convolution():
     E_size = (batch_size, G.number_of_edges(), edge_in)
 
     # Create torch tensors
-    A = torch.tensor(A, dtype=float, device=device)
-    B = torch.tensor(B, dtype=float, device=device)
-    V = torch.randn(V_size, dtype=float, device=device)
-    E = torch.randn(E_size, dtype=float, device=device)
+    A = torch.tensor(A, dtype=float)
+    B = torch.tensor(B, dtype=float)
+    V = torch.randn(V_size, dtype=float)
+    E = torch.randn(E_size, dtype=float)
 
     # Forward pass
     Vout, Eout = gconv(A, B, V, E)

@@ -9,15 +9,14 @@ class NodeToNode(nn.Module):
     """Graph convolution layer over nodes"""
 
     def __init__(self, node_in: int, node_out: int):
-        super(NodeToNode, self).__init__()
-        self.W = torch.randn(  # Node to node
-            (node_in, node_out), requires_grad=True, dtype=float
+        super(type(self), self).__init__()
+        self.W = nn.Parameter(
+            torch.randn((node_in, node_out)).type(torch.float), requires_grad=True,
         )
-        self.b = torch.randn(  # Node bias
-            (1, 1, node_out), requires_grad=True, dtype=float
+        self.b = nn.Parameter(
+            torch.zeros(size=(1, 1, node_out)).type(torch.float), requires_grad=True
         )
         nn.init.xavier_uniform_(self.W)
-        nn.init.xavier_uniform_(self.b)
 
     def forward(self, A, V):
         """Computes forward pass of graph convolution
@@ -43,11 +42,10 @@ class NodeToEdge(nn.Module):
     """
 
     def __init__(self, node_in, edge_out):
-        super(NodeToEdge, self).__init__()
+        super(type(self), self).__init__()
         self.W = torch.randn((node_in, edge_out), requires_grad=True, dtype=float)
-        self.b = torch.randn((1, 1, edge_out))
+        self.b = torch.zeros(size=(1, 1, edge_out), requires_grad=True, dtype=float)
         nn.init.xavier_uniform_(self.W)
-        nn.init.xavier_uniform_(self.b)
 
     def forward(self, B, V):
         """Computes forward pass of graph convolution
@@ -86,7 +84,7 @@ class GraphConvolution(nn.Module):
     """
 
     def __init__(self, node_in: int, node_out: int, edge_in: int, edge_out: int):
-        super(GraphConvolution, self).__init__()
+        super(type(self), self).__init__()
         self.Wvv = torch.randn(  # Node to node
             (node_in, node_out), requires_grad=True, dtype=float
         )
@@ -96,10 +94,10 @@ class GraphConvolution(nn.Module):
         self.Wve = torch.randn(  # Node to edge
             (node_in, edge_out), requires_grad=True, dtype=float
         )
-        self.bv = torch.randn(  # Node bias
+        self.bv = torch.zeros(  # Node bias
             (1, 1, node_out), requires_grad=True, dtype=float
         )
-        self.be = torch.randn(  # Edge bias
+        self.be = torch.zeros(  # Edge bias
             (1, 1, edge_out), requires_grad=True, dtype=float
         )
 
@@ -107,8 +105,6 @@ class GraphConvolution(nn.Module):
         self.biases = {"bv": self.bv, "be": self.be}
         for W in self.weights.values():
             nn.init.xavier_uniform_(W)
-        for b in self.biases.values():
-            nn.init.xavier_uniform_(b)
 
     def forward(self, A, B, V, E):
         """Computes forward pass of graph convolution
@@ -147,7 +143,7 @@ class GraphEmbedding(nn.Module):
     """Graph embedding layer"""
 
     def __init__(self):
-        super(GraphEmbedding, self).__init__()
+        super(type(self), self).__init__()
 
     def forward(self, V, E):
         """

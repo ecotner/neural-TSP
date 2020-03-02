@@ -15,9 +15,10 @@ State = namedtuple("State", "locs, dist_matrix, order, dist")
 class TSPEnvironment(gym.Env):
     """Environment representing the Traveling Salesman Problem (TSP)"""
 
-    def __init__(self, num_locs_range: Tuple[int, int]):
+    def __init__(self, num_locs_range: Tuple[int, int], oneshot: bool = False):
         super(TSPEnvironment, self).__init__()
         self.num_locs_range = num_locs_range
+        self.oneshot = oneshot
         self.reset()
 
     def step(self, action):
@@ -30,7 +31,7 @@ class TSPEnvironment(gym.Env):
         info = dict()
         return state, reward, done, info
 
-    def reset(self):
+    def reset(self) -> State:
         """Reset the environment.
         
         Creates a new set of locations chosen from a uniform distribution,
@@ -71,6 +72,7 @@ class TSPEnvironment(gym.Env):
         self.action_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.num_locs,))
 
         # Initialize rewards
+        self.reward = 0
         self._update_state(self.order)
 
         return self._next_observation()
@@ -94,7 +96,7 @@ class TSPEnvironment(gym.Env):
     def seed(self):
         pass
 
-    def _next_observation(self):
+    def _next_observation(self) -> State:
         return State(self.locations, self.D, self.order, self.obj_value)
 
     def _update_state(self, action):
@@ -106,6 +108,9 @@ class TSPEnvironment(gym.Env):
         dist = self.D[idx].sum()
         # Update reward/objective
         self.obj_value = dist
-        self.reward = -dist
+        if self.oneshot:
+            self.reward = -dist
+        else:
+            self.reward = self.reward - dist
         return None
 
