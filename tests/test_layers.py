@@ -7,6 +7,7 @@ import pytest
 from neural_tsp.libs.layers import (
     NodeToNode,
     NodeToEdge,
+    EdgeToNode,
     GraphConvolution,
     GraphEmbedding,
 )
@@ -27,8 +28,10 @@ def test_node_to_node():
     G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
 
     # Create torch tensors
-    A = torch.tensor(nx.adjacency_matrix(G).todense(), dtype=float)
-    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=float)
+    A = torch.tensor(nx.adjacency_matrix(G).todense(), dtype=torch.float).to(device)
+    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=torch.float).to(
+        device
+    )
 
     # Forward pass
     Vout = gconv(A, V)
@@ -50,14 +53,45 @@ def test_node_to_edge():
     G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
 
     # Create torch tensors
-    B = torch.tensor(nx.incidence_matrix(G, oriented=True).T.todense(), dtype=float)
-    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=float)
+    B = torch.tensor(
+        nx.incidence_matrix(G, oriented=True).T.todense(), dtype=torch.float
+    ).to(device)
+    V = torch.randn((batch_size, G.number_of_nodes(), node_in), dtype=torch.float).to(
+        device
+    )
 
     # Forward pass
-    Vout = gconv(B, V)
+    Eout = gconv(B, V)
 
     # Assert output shapes are correct
-    assert Vout.shape == (batch_size, G.number_of_edges(), edge_out)
+    assert Eout.shape == (batch_size, G.number_of_edges(), edge_out)
+
+
+def test_edge_to_node():
+    # Define convolution layer
+    edge_in, node_out = np.random.randint(1, 10, size=2)
+    gconv = EdgeToNode(edge_in, node_out)
+    gconv.to(device)
+
+    # Define graph
+    num_nodes = 10
+    p = 0.5
+    batch_size = 4
+    G = nx.fast_gnp_random_graph(num_nodes, p, directed=True)
+
+    # Create torch tensors
+    B = torch.tensor(
+        nx.incidence_matrix(G, oriented=True).T.todense(), dtype=torch.float
+    ).to(device)
+    E = torch.randn((batch_size, G.number_of_edges(), edge_in), dtype=torch.float).to(
+        device
+    )
+
+    # Forward pass
+    Vout = gconv(B, E)
+
+    # Assert output shapes are correct
+    assert Vout.shape == (batch_size, G.number_of_nodes(), node_out)
 
 
 def test_graph_convolution():
