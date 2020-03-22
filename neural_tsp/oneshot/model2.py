@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from neural_tsp.libs.layers import NodeToNode
 
 
-class PolicyNetwork(nn.Module):
+class Actor(nn.Module):
     """Network representing an agent's policy"""
 
     def __init__(self):
@@ -21,7 +21,7 @@ class PolicyNetwork(nn.Module):
         return V
 
 
-class QNetwork(nn.Module):
+class Critic(nn.Module):
     """Network representing the Q-value under an agent's policy"""
 
     def __init__(self):
