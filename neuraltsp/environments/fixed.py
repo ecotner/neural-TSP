@@ -65,13 +65,12 @@ class FixedTSPEnv(gym.Env):
             raise ValueError("invalid action `kind`")
 
     def _step_reorder(self, action):
-        # Turn the input action into a sequence of stops
-        seq = action.squeeze().argsort()
+        assert action.dtype == torch.long
         # calculate the distance traversed by this sequence
         d = self.dmatrix[seq, torch.roll(seq, -1, dims=0)].sum()
-        self.state = State(self.locs, self.dmatrix, seq, d)
+        self.state = State(self.locs, self.dmatrix, action, d)
         self.reward = -d
-        self.done = False
+        self.done = True
         self.info = dict()
         return self.state, self.reward, self.done, self.info
 
@@ -79,7 +78,7 @@ class FixedTSPEnv(gym.Env):
         """Reset the environment. Since the state is fixed, this doesn't
         actually do anything.
         """
-        pass
+        return self.state
 
     def render(self) -> plt.Figure:
         """Returns a plot of the locations (and the sequence of stops if
