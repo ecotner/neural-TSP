@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from neural_tsp.libs.layers import NodeToNode
+from neuraltsp.nn.layers import NodeToNode
 
 
 class Actor(nn.Module):

@@ -1,4 +1,5 @@
 import datetime as dt
+import time
 
 import torch
 import torch.optim as optim
@@ -8,7 +9,7 @@ from neural_tsp.libs.environment import TSPEnvironment
 from neural_tsp.oneshot.model import PolicyNetwork, QNetwork
 
 
-def train(max_episodes: int, lr: float):
+def train(run_for: float, lr: float):
     # Create environment
     env = TSPEnvironment(num_locs_range=[5, 10], oneshot=True)
     # Initialize policy/value networks
@@ -29,9 +30,11 @@ def train(max_episodes: int, lr: float):
     # Iterate over episodes
     # max_episodes = 100
     # for episode in range(max_episodes):
-    stop_time = dt.datetime.strptime("2020-03-02 08:00:00", "%Y-%m-%d %H:%M:%S")
+    stop_time = dt.datetime.strptime("2020-10-03 19:16:00", "%Y-%m-%d %H:%M:%S")
     episode = 0
-    while dt.datetime.now() < stop_time:
+    tic = time.time()
+    # while dt.datetime.now() < stop_time:
+    while time.time() - tic < run_for:
         s = env.reset()
         A = 1 / (
             torch.from_numpy(s.dist_matrix.astype(float))
