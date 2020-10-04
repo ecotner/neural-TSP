@@ -49,7 +49,7 @@ class FixedTSPEnv(gym.Env):
         # set initial state
         self.state = State(locs, dmatrix, None, None)
 
-    def step(self, action):
+    def step(self, action, kind):
         """Accept an action, update the state of the environment, output next state.
 
         Arguments:
@@ -59,8 +59,14 @@ class FixedTSPEnv(gym.Env):
         Returns:
             tuple of (state, reward, done, info)
         """
+        if kind == "re-order":
+            return self._step_reorder(action)
+        else:
+            raise ValueError("invalid action `kind`")
+
+    def _step_reorder(self, action):
         # Turn the input action into a sequence of stops
-        seq = torch.argsort(action)
+        seq = action.squeeze().argsort()
         # calculate the distance traversed by this sequence
         d = self.dmatrix[seq, torch.roll(seq, -1, dims=0)].sum()
         self.state = State(self.locs, self.dmatrix, seq, d)

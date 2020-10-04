@@ -5,23 +5,23 @@ import torch.nn.functional as F
 from neuraltsp.nn.layers import NodeToNode
 
 
-class PolicyNetwork(nn.Module):
+class Actor(nn.Module):
     """Network representing an agent's policy"""
 
     def __init__(self):
         super(type(self), self).__init__()
         self.conv1 = NodeToNode(node_in=2, node_out=10)
-        self.conv2 = NodeToNode(node_in=10, node_out=10)
+        # self.conv2 = NodeToNode(node_in=10, node_out=10)
         self.conv3 = NodeToNode(node_in=10, node_out=1)
 
     def forward(self, A, V):
         V = F.relu(self.conv1(A, V))
-        V = F.relu(self.conv2(A, V))
+        # V = F.relu(self.conv2(A, V))
         V = self.conv3(A, V)
         return V
 
 
-class QNetwork(nn.Module):
+class Critic(nn.Module):
     """Network representing the Q-value under an agent's policy"""
 
     def __init__(self):
