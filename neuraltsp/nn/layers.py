@@ -38,13 +38,17 @@ class NodeToNode(nn.Module):
 
 
 class NodeToEdge(nn.Module):
-    """Layer that transforms node weights to edge weights.
+    """Layer that transforms node features to edge features.
     """
 
     def __init__(self, node_in, edge_out):
         super(type(self), self).__init__()
-        self.W = torch.randn((node_in, edge_out), requires_grad=True, dtype=float)
-        self.b = torch.zeros(size=(1, 1, edge_out), requires_grad=True, dtype=float)
+        self.W = nn.Parameter(
+            torch.randn((node_in, edge_out), requires_grad=True, dtype=torch.float)
+        )
+        self.b = nn.Parameter(
+            torch.zeros(size=(1, 1, edge_out), requires_grad=True, dtype=torch.float)
+        )
         nn.init.xavier_uniform_(self.W)
 
     def forward(self, B, V):
@@ -57,7 +61,7 @@ class NodeToEdge(nn.Module):
             V [Tensor]: Node feature matrix. Must have dimensions of
                 (batch, |V|, node_in).
         Returns:
-            Tensor: Tensor representing the output node representations. The
+            Tensor: Tensor representing the output edge representations. The
                 tensor has dimensions (batch, |E|, edge_out).
         """
         # FIXME: use of torch.einsum is supposed to be really slow; try to
@@ -67,7 +71,36 @@ class NodeToEdge(nn.Module):
 
 
 class EdgeToNode(nn.Module):
-    pass
+    """Layer that transforms edge features to node features.
+    """
+
+    def __init__(self, edge_in, node_out):
+        super(type(self), self).__init__()
+        self.W = nn.Parameter(
+            torch.randn((edge_in, node_out), requires_grad=True, dtype=torch.float)
+        )
+        self.b = nn.Parameter(
+            torch.zeros(size=(1, 1, node_out), requires_grad=True, dtype=torch.float)
+        )
+        nn.init.xavier_uniform_(self.W)
+
+    def forward(self, B, E):
+        """Computes forward pass of graph convolution
+
+        Arguments:
+            B [Tensor]: Incidence matrix of the graph. Acts as a diffusion
+                operator between the node/edge space. Is a matrix with
+                dimensions of (|E|, |V|).
+            E [Tensor]: Edge feature matrix. Must have dimensions of
+                (batch, |E|, edge_in)
+        Returns:
+            Tensor: Tensor representing the output node representations. The
+                tensor has dimensions (batch, |E|, edge_out).
+        """
+        # FIXME: use of torch.einsum is supposed to be really slow; try to
+        # replace with matmul or tensordot if possible
+        Vout = torch.einsum("xai,ab,ij->xbj", E, B, self.W) + self.b
+        return Vout
 
 
 class GraphConvolution(nn.Module):
@@ -85,20 +118,30 @@ class GraphConvolution(nn.Module):
 
     def __init__(self, node_in: int, node_out: int, edge_in: int, edge_out: int):
         super(type(self), self).__init__()
-        self.Wvv = torch.randn(  # Node to node
-            (node_in, node_out), requires_grad=True, dtype=float
+        self.Wvv = nn.Parameter(
+            torch.randn(  # Node to node
+                (node_in, node_out), requires_grad=True, dtype=torch.float
+            )
         )
-        self.Wev = torch.randn(  # Edge to node
-            (edge_in, node_out), requires_grad=True, dtype=float
+        self.Wev = nn.Parameter(
+            torch.randn(  # Edge to node
+                (edge_in, node_out), requires_grad=True, dtype=torch.float
+            )
         )
-        self.Wve = torch.randn(  # Node to edge
-            (node_in, edge_out), requires_grad=True, dtype=float
+        self.Wve = nn.Parameter(
+            torch.randn(  # Node to edge
+                (node_in, edge_out), requires_grad=True, dtype=torch.float
+            )
         )
-        self.bv = torch.zeros(  # Node bias
-            (1, 1, node_out), requires_grad=True, dtype=float
+        self.bv = nn.Parameter(
+            torch.zeros(  # Node bias
+                (1, 1, node_out), requires_grad=True, dtype=torch.float
+            )
         )
-        self.be = torch.zeros(  # Edge bias
-            (1, 1, edge_out), requires_grad=True, dtype=float
+        self.be = nn.Parameter(
+            torch.zeros(  # Edge bias
+                (1, 1, edge_out), requires_grad=True, dtype=torch.float
+            )
         )
 
         self.weights = {"Wvv": self.Wvv, "Wev": self.Wev, "Wve": self.Wve}
@@ -135,7 +178,8 @@ class GraphConvolution(nn.Module):
         Vvv = torch.einsum("ba,xai,ij->xbj", A, V, self.Wvv)
         Vev = torch.einsum("xai,ab,ij->xbj", E, B, self.Wev)
         Vout = Vvv + Vev + self.bv
-        Eout = torch.einsum("ab,xbi,ij->xaj", B, V, self.Wve) + self.be
+        # Eout = torch.einsum("ab,xbi,ij->xaj", B, V, self.Wve) + self.be
+        Eout = torch.einsum("ij,xai,ba,ca->xcj", self.Wve, V, A, B) + self.be
         return Vout, Eout
 
 

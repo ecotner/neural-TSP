@@ -4,7 +4,7 @@ import networkx as nx
 from sklearn.decomposition import non_negative_factorization
 import pytest
 
-from neural_tsp.libs.layers import (
+from neuraltsp.nn.layers import (
     NodeToNode,
     NodeToEdge,
     EdgeToNode,
