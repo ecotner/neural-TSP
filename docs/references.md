@@ -25,3 +25,5 @@
 	* Introduction of "reward potentials"
 * Playing Atari with Deep Reinforcement Learning; V. Mnih et. al.; Nature 2015; [link](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf)
 	* Introduction of Deep Q-Network (DQN), using memory replay and a target network
+* Attention, Learn to Solve Routing Problems!; W. Kook, H. van Hoof, M. Welling; [link](https://arxiv.org/abs/1803.08475)
+	* Solves many types of routing problems (TSP, VRP, others) using a multi-headed attention model with graph neural networks
