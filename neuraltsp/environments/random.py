@@ -121,13 +121,12 @@ class RandomTSPEnv(gym.Env):
         self.state = State(self.locs, self.dmatrix, None, None)
         return self.state
 
-    def render(self, number_points=False) -> plt.Figure:
+    def render(self, label_pts=False) -> plt.Figure:
         """Returns a plot of the locations (and the sequence of stops if
         available).
         """
-        fig = plt.figure()
         locs = self.locs.cpu().numpy()
-        if number_points:
+        if label_pts:
             for i in range(len(locs)):
                 marker = f"${{{str(i)}}}$"
                 plt.scatter(locs[i, 0], locs[i, 1], color="black", marker=marker)
@@ -143,7 +142,6 @@ class RandomTSPEnv(gym.Env):
             plt.title("TSP circuit")
         plt.xlabel("x-coord")
         plt.ylabel("y-coord")
-        return fig
 
     def close(self):
         pass
