@@ -129,7 +129,13 @@ class RandomTSPEnv(gym.Env):
         if label_pts:
             for i in range(len(locs)):
                 marker = f"${{{str(i)}}}$"
-                plt.scatter(locs[i, 0], locs[i, 1], color="black", marker=marker)
+                plt.scatter(
+                    locs[i, 0],
+                    locs[i, 1],
+                    color="black",
+                    marker=marker,
+                    s=50 * len(str(i)),
+                )
         else:
             plt.scatter(locs[:, 0], locs[:, 1], color="black")
         if self.state.seq is not None:
